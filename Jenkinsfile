@@ -43,11 +43,11 @@ pipeline {
                     
                     echo "Changed files:\n${changes}"
 
-                    def changedFiles = changes.split('\n')
+                    // 1. Use a regular expression to split by any newline/carriage return
+                    // 2. Use the .collect operator to map and trim every line
+                    def changedFiles = changes.split(/[\r\n]+/).collect { it.trim() } 
                     
                     for (file in changedFiles) {
-                        // Trim whitespace just in case
-                        file = file.trim()
 
                         if (file.contains('mlops-llm4ts/model-service/auth-service/')) {
                             env.DEPLOY_AUTH = 'true'
