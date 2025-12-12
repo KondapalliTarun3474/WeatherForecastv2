@@ -1,0 +1,11 @@
+Flask
+Flask-Cors
+python-json-logger
+requests
+pandas
+numpy<2.0.0
+transformers
+torch==2.2.2+cpu
+torchvision==0.17.2+cpu
+torchaudio==2.2.2+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu

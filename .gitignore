@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+
+# Custom ignore folder
+ignore/
+
+# Frontend
+frontend-new/node_modules/
+
+# Models
+mlops-llm4ts/model-service/inference-service/models/

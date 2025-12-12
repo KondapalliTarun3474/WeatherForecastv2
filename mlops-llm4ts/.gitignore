@@ -1,0 +1,5 @@
+# # .gitignore (in repository root)
+# latest.pt
+# models/
+# model-service/inference-service/models/
+# __pycache__/

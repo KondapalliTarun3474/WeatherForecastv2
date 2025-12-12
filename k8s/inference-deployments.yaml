@@ -1,0 +1,66 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-t2m
+  namespace: weather-mlops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference-t2m
+  template:
+    metadata:
+      labels:
+        app: inference-t2m
+    spec:
+      containers:
+      - name: inference-t2m
+        image: weather-inference:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-rh2m
+  namespace: weather-mlops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference-rh2m
+  template:
+    metadata:
+      labels:
+        app: inference-rh2m
+    spec:
+      containers:
+      - name: inference-rh2m
+        image: weather-inference:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-ws2m
+  namespace: weather-mlops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference-ws2m
+  template:
+    metadata:
+      labels:
+        app: inference-ws2m
+    spec:
+      containers:
+      - name: inference-ws2m
+        image: weather-inference:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5001

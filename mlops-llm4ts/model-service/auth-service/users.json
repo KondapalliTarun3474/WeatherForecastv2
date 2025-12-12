@@ -1,0 +1,23 @@
+{
+    "admin": {
+        "password": "admin123",
+        "role": "admin",
+        "has_llm_access": true
+    },
+    "testuser2": {
+        "password": "password",
+        "role": "user",
+        "has_llm_access": false
+    },
+    "user1": {
+        "password": "user123",
+        "role": "user",
+        "has_llm_access": true
+    },
+    "user2": {
+        "password": "user123",
+        "role": "user",
+        "has_llm_access": true,
+        "access_requested": false
+    }
+}
