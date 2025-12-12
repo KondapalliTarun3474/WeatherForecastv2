@@ -16,6 +16,9 @@ pipeline {
         
         // Dynamic Image Tag
         IMAGE_TAG = "v${env.BUILD_NUMBER}"
+
+        // Set Kubeconfig explicitly for kubectl commands
+        KUBECONFIG = "/home/tarun-3474/.kube/config"
     }
 
     stages {
