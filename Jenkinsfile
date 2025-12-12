@@ -81,12 +81,16 @@ pipeline {
         stage('Build & Push Auth') {
             when { expression { return deployAuth } }
             steps {
-                script {
-                    docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        // Context: mlops-llm4ts/model-service/auth-service/
-                        def img = docker.build("${DOCKER_USER}/weather-auth:${IMAGE_TAG}", "-f mlops-llm4ts/model-service/auth-service/Dockerfile.auth mlops-llm4ts/model-service/auth-service/")
-                        img.push()
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKER_CREDENTIALS_ID,
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker build -t ${DOCKER_USER}/weather-auth:${IMAGE_TAG} -f mlops-llm4ts/model-service/auth-service/Dockerfile.auth mlops-llm4ts/model-service/auth-service/
+                        docker push ${DOCKER_USER}/weather-auth:${IMAGE_TAG}
+                    """
                 }
             }
         }
@@ -94,12 +98,16 @@ pipeline {
         stage('Build & Push Inference') {
             when { expression { return deployInference } }
             steps {
-                script {
-                    docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        // Context: mlops-llm4ts/model-service/inference-service/
-                        def img = docker.build("${DOCKER_USER}/weather-inference:${IMAGE_TAG}", "-f mlops-llm4ts/model-service/inference-service/Dockerfile.param mlops-llm4ts/model-service/inference-service/")
-                        img.push()
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKER_CREDENTIALS_ID,
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker build -t ${DOCKER_USER}/weather-inference:${IMAGE_TAG} -f mlops-llm4ts/model-service/inference-service/Dockerfile.param mlops-llm4ts/model-service/inference-service/
+                        docker push ${DOCKER_USER}/weather-inference:${IMAGE_TAG}
+                    """
                 }
             }
         }
@@ -107,11 +115,16 @@ pipeline {
         stage('Build & Push Frontend') {
             when { expression { return deployFrontend } }
             steps {
-                script {
-                    docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        def img = docker.build("${DOCKER_USER}/weather-frontend:${IMAGE_TAG}", "frontend-new/")
-                        img.push()
-                    }
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKER_CREDENTIALS_ID,
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker build -t ${DOCKER_USER}/weather-frontend:${IMAGE_TAG} frontend-new/
+                        docker push ${DOCKER_USER}/weather-frontend:${IMAGE_TAG}
+                    """
                 }
             }
         }
