@@ -1,3 +1,10 @@
+// Define global variables to hold deployment decisions
+// This avoids scoping issues with 'env' variables inside 'when' blocks
+def deployAuth = false
+def deployInference = false
+def deployFrontend = false
+def hasChanges = false
+
 pipeline {
     agent any
 
@@ -9,12 +16,7 @@ pipeline {
         // Dynamic Image Tag
         IMAGE_TAG = "v${env.BUILD_NUMBER}"
         
-        // Deployment Flags (will be set by Change Detection)
-        DEPLOY_AUTH = 'false'
-        DEPLOY_INFERENCE = 'false'
-        DEPLOY_FRONTEND = 'false'
-        
-        // Tags to pass to Ansible
+        // Tags to pass to Ansible (defaults to empty)
         ANSIBLE_TAGS = ''
     }
 
@@ -28,51 +30,56 @@ pipeline {
         stage('Detect Changes') {
             steps {
                 script {
-                    // Check diff between HEAD and previous commit
-                    // If this is the first run/no history, this might fail, so wrap in try/catch or use a safer command
-                    // For typical Push events, HEAD~1 works.
-                    def changes = ""
+                    def tagsList = []
+
+                    // Print changes for visibility
                     try {
-                        changes = sh(script: 'git diff --name-only HEAD~1 HEAD', returnStdout: true).trim()
+                        def changesResult = sh(script: 'git diff --name-only HEAD~1 HEAD', returnStdout: true).trim()
+                        echo "Changed files:\n${changesResult}"
                     } catch (Exception e) {
-                        echo "Could not diff against HEAD~1 (first commit?). Assuming everything changed."
-                        changes = "mlops-llm4ts/model-service/auth-service/ mlops-llm4ts/model-service/inference-service/ frontend-new/"
+                        echo "Listing changes failed (first run?), proceeding with detection..."
                     }
 
-                    def tagsList = []
-                    
-                    echo "Changed files:\n${changes}"
+                    // Helper to check changes via shell (robust against string formatting issues)
+                    // If git diff fails (e.g. first run), we default to 'true' (deploy match)
+                    def checkChange = { pattern ->
+                        try {
+                            // grep returns 0 if found, 1 if not. We use || true to prevent script failure on 1.
+                            // We check if output is non-empty.
+                            def grepResult = sh(script: "git diff --name-only HEAD~1 HEAD | grep '${pattern}' || true", returnStdout: true).trim()
+                            return !grepResult.isEmpty()
+                        } catch (Exception e) {
+                            return true // Assume changed if git fails
+                        }
+                    }
 
-                    // 1. Use a regular expression to split by any newline/carriage return
-                    // 2. Use the .collect operator to map and trim every line
-                    def changedFiles = changes.split(/[\r\n]+/).collect { it.trim() } 
-                    
-                    for (file in changedFiles) {
-
-                        if (file.contains('mlops-llm4ts/model-service/auth-service/')) {
-                            env.DEPLOY_AUTH = 'true'
-                            if (!tagsList.contains('auth')) tagsList.add('auth')
-                        }
-                        if (file.contains('mlops-llm4ts/model-service/inference-service/')) {
-                            env.DEPLOY_INFERENCE = 'true'
-                            if (!tagsList.contains('inference')) tagsList.add('inference')
-                        }
-                        if (file.contains('frontend-new/')) {
-                            env.DEPLOY_FRONTEND = 'true'
-                            if (!tagsList.contains('frontend')) tagsList.add('frontend')
-                        }
+                    if (checkChange('mlops-llm4ts/model-service/auth-service/')) {
+                        deployAuth = true
+                        if (!tagsList.contains('auth')) tagsList.add('auth')
+                    }
+                    if (checkChange('mlops-llm4ts/model-service/inference-service/')) {
+                        deployInference = true
+                        if (!tagsList.contains('inference')) tagsList.add('inference')
+                    }
+                    if (checkChange('frontend-new/')) {
+                        deployFrontend = true
+                        if (!tagsList.contains('frontend')) tagsList.add('frontend')
                     }
                     
                     env.ANSIBLE_TAGS = tagsList.join(',')
                     
-                    echo "Flags -> Auth: ${env.DEPLOY_AUTH}, Inference: ${env.DEPLOY_INFERENCE}, Frontend: ${env.DEPLOY_FRONTEND}"
+                    if (env.ANSIBLE_TAGS != '') {
+                        hasChanges = true
+                    }
+                    
+                    echo "Deploy Decisions -> Auth: ${deployAuth}, Inference: ${deployInference}, Frontend: ${deployFrontend}"
                     echo "Ansible Tags: ${env.ANSIBLE_TAGS}"
                 }
             }
         }
 
         stage('Build & Push Auth') {
-            when { expression { return env.DEPLOY_AUTH == 'true' } }
+            when { expression { return deployAuth } }
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
@@ -85,7 +92,7 @@ pipeline {
         }
 
         stage('Build & Push Inference') {
-            when { expression { return env.DEPLOY_INFERENCE == 'true' } }
+            when { expression { return deployInference } }
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
@@ -98,7 +105,7 @@ pipeline {
         }
 
         stage('Build & Push Frontend') {
-            when { expression { return env.DEPLOY_FRONTEND == 'true' } }
+            when { expression { return deployFrontend } }
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
@@ -110,7 +117,7 @@ pipeline {
         }
         
         stage('Deploy with Ansible') {
-            when { expression { return env.ANSIBLE_TAGS != '' } }
+            when { expression { return hasChanges } }
             steps {
                 // Execute Ansible Playbook from the root
                 // We pass dynamic tags so Ansible deploys the version we just built
