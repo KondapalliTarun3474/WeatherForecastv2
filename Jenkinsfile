@@ -43,17 +43,24 @@ pipeline {
                     
                     echo "Changed files:\n${changes}"
 
-                    if (changes.contains('mlops-llm4ts/model-service/auth-service/')) {
-                        env.DEPLOY_AUTH = 'true'
-                        tagsList.add('auth')
-                    }
-                    if (changes.contains('mlops-llm4ts/model-service/inference-service/')) {
-                        env.DEPLOY_INFERENCE = 'true'
-                        tagsList.add('inference')
-                    }
-                    if (changes.contains('frontend-new/')) {
-                        env.DEPLOY_FRONTEND = 'true'
-                        tagsList.add('frontend')
+                    def changedFiles = changes.split('\n')
+                    
+                    for (file in changedFiles) {
+                        // Trim whitespace just in case
+                        file = file.trim()
+
+                        if (file.contains('mlops-llm4ts/model-service/auth-service/')) {
+                            env.DEPLOY_AUTH = 'true'
+                            if (!tagsList.contains('auth')) tagsList.add('auth')
+                        }
+                        if (file.contains('mlops-llm4ts/model-service/inference-service/')) {
+                            env.DEPLOY_INFERENCE = 'true'
+                            if (!tagsList.contains('inference')) tagsList.add('inference')
+                        }
+                        if (file.contains('frontend-new/')) {
+                            env.DEPLOY_FRONTEND = 'true'
+                            if (!tagsList.contains('frontend')) tagsList.add('frontend')
+                        }
                     }
                     
                     env.ANSIBLE_TAGS = tagsList.join(',')
