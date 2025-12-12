@@ -35,26 +35,25 @@ pipeline {
                         echo "Could not diff against HEAD~1 (first commit?). Assuming everything changed."
                         changes = "mlops-llm4ts/model-service/auth-service/ mlops-llm4ts/model-service/inference-service/ frontend-new/"
                     }
+
+                    def tagsList = []
                     
                     echo "Changed files:\n${changes}"
 
                     if (changes.contains('mlops-llm4ts/model-service/auth-service/')) {
                         env.DEPLOY_AUTH = 'true'
-                        env.ANSIBLE_TAGS += 'auth,'
+                        tagsList.add('auth')
                     }
                     if (changes.contains('mlops-llm4ts/model-service/inference-service/')) {
                         env.DEPLOY_INFERENCE = 'true'
-                        env.ANSIBLE_TAGS += 'inference,'
+                        tagsList.add('inference')
                     }
                     if (changes.contains('frontend-new/')) {
                         env.DEPLOY_FRONTEND = 'true'
-                        env.ANSIBLE_TAGS += 'frontend,'
+                        tagsList.add('frontend')
                     }
                     
-                    // Clean up trailing comma
-                    if (env.ANSIBLE_TAGS.endsWith(',')) {
-                         env.ANSIBLE_TAGS = env.ANSIBLE_TAGS.substring(0, env.ANSIBLE_TAGS.length() - 1)
-                    }
+                    env.ANSIBLE_TAGS = tagsList.join(',')
                     
                     echo "Flags -> Auth: ${env.DEPLOY_AUTH}, Inference: ${env.DEPLOY_INFERENCE}, Frontend: ${env.DEPLOY_FRONTEND}"
                     echo "Ansible Tags: ${env.ANSIBLE_TAGS}"
