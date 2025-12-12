@@ -6,6 +6,9 @@ pipeline {
         DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
         DOCKER_USER = 'kondapallitarun3474'
         
+        // Dynamic Image Tag
+        IMAGE_TAG = "v${env.BUILD_NUMBER}"
+        
         // Deployment Flags (will be set by Change Detection)
         DEPLOY_AUTH = 'false'
         DEPLOY_INFERENCE = 'false'
@@ -67,7 +70,7 @@ pipeline {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
                         // Context: mlops-llm4ts/model-service/auth-service/
-                        def img = docker.build("${DOCKER_USER}/weather-auth:v1", "-f mlops-llm4ts/model-service/auth-service/Dockerfile.auth mlops-llm4ts/model-service/auth-service/")
+                        def img = docker.build("${DOCKER_USER}/weather-auth:${IMAGE_TAG}", "-f mlops-llm4ts/model-service/auth-service/Dockerfile.auth mlops-llm4ts/model-service/auth-service/")
                         img.push()
                     }
                 }
@@ -80,7 +83,7 @@ pipeline {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
                         // Context: mlops-llm4ts/model-service/inference-service/
-                        def img = docker.build("${DOCKER_USER}/weather-inference:v1", "-f mlops-llm4ts/model-service/inference-service/Dockerfile.param mlops-llm4ts/model-service/inference-service/")
+                        def img = docker.build("${DOCKER_USER}/weather-inference:${IMAGE_TAG}", "-f mlops-llm4ts/model-service/inference-service/Dockerfile.param mlops-llm4ts/model-service/inference-service/")
                         img.push()
                     }
                 }
@@ -92,7 +95,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_CREDENTIALS_ID) {
-                        def img = docker.build("${DOCKER_USER}/weather-frontend:v1", "frontend-new/")
+                        def img = docker.build("${DOCKER_USER}/weather-frontend:${IMAGE_TAG}", "frontend-new/")
                         img.push()
                     }
                 }
@@ -103,8 +106,8 @@ pipeline {
             when { expression { return env.ANSIBLE_TAGS != '' } }
             steps {
                 // Execute Ansible Playbook from the root
-                // Assuming 'ansible-playbook' is in the PATH of the Jenkins agent
-                sh "ansible-playbook ansible/deploy.yml --tags '${env.ANSIBLE_TAGS}'"
+                // We pass dynamic tags so Ansible deploys the version we just built
+                sh "ansible-playbook ansible/deploy.yml --tags '${env.ANSIBLE_TAGS}' -e 'auth_tag=${IMAGE_TAG} inference_tag=${IMAGE_TAG} frontend_tag=${IMAGE_TAG}'"
             }
         }
     }
