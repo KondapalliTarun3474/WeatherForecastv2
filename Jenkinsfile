@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Credentials ID as configured in Jenkins
-        DOCKER_CREDENTIALS_ID = 'dockerhub-creds'
+        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
         DOCKER_USER = 'kondapallitarun3474'
         
         // Deployment Flags (will be set by Change Detection)
