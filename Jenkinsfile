@@ -4,6 +4,7 @@ def deployAuth = false
 def deployInference = false
 def deployFrontend = false
 def hasChanges = false
+def ansibleTagsString = ""
 
 pipeline {
     agent any
@@ -15,9 +16,6 @@ pipeline {
         
         // Dynamic Image Tag
         IMAGE_TAG = "v${env.BUILD_NUMBER}"
-        
-        // Tags to pass to Ansible (defaults to empty)
-        ANSIBLE_TAGS = ''
     }
 
     stages {
@@ -66,17 +64,18 @@ pipeline {
                         if (!tagsList.contains('frontend')) tagsList.add('frontend')
                     }
                     
-                    env.ANSIBLE_TAGS = tagsList.join(',')
+                    ansibleTagsString = tagsList.join(',')
                     
-                    if (env.ANSIBLE_TAGS != '') {
+                    if (ansibleTagsString != '') {
                         hasChanges = true
                     }
                     
                     echo "Deploy Decisions -> Auth: ${deployAuth}, Inference: ${deployInference}, Frontend: ${deployFrontend}"
-                    echo "Ansible Tags: ${env.ANSIBLE_TAGS}"
+                    echo "Ansible Tags: ${ansibleTagsString}"
                 }
             }
         }
+// ... (intermediate build stages remain unchanged logic-wise, but just replacing logic around them implicitly by context)
 
         stage('Build & Push Auth') {
             when { expression { return deployAuth } }
@@ -87,9 +86,9 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh """
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker build -t ${DOCKER_USER}/weather-auth:${IMAGE_TAG} -f mlops-llm4ts/model-service/auth-service/Dockerfile.auth mlops-llm4ts/model-service/auth-service/
-                        docker push ${DOCKER_USER}/weather-auth:${IMAGE_TAG}
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker build -t \${DOCKER_USER}/weather-auth:\${IMAGE_TAG} -f mlops-llm4ts/model-service/auth-service/Dockerfile.auth mlops-llm4ts/model-service/auth-service/
+                        docker push \${DOCKER_USER}/weather-auth:\${IMAGE_TAG}
                     """
                 }
             }
@@ -104,9 +103,9 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh """
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker build -t ${DOCKER_USER}/weather-inference:${IMAGE_TAG} -f mlops-llm4ts/model-service/inference-service/Dockerfile.param mlops-llm4ts/model-service/inference-service/
-                        docker push ${DOCKER_USER}/weather-inference:${IMAGE_TAG}
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker build -t \${DOCKER_USER}/weather-inference:\${IMAGE_TAG} -f mlops-llm4ts/model-service/inference-service/Dockerfile.param mlops-llm4ts/model-service/inference-service/
+                        docker push \${DOCKER_USER}/weather-inference:\${IMAGE_TAG}
                     """
                 }
             }
@@ -121,9 +120,9 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh """
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker build -t ${DOCKER_USER}/weather-frontend:${IMAGE_TAG} frontend-new/
-                        docker push ${DOCKER_USER}/weather-frontend:${IMAGE_TAG}
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker build -t \${DOCKER_USER}/weather-frontend:\${IMAGE_TAG} frontend-new/
+                        docker push \${DOCKER_USER}/weather-frontend:\${IMAGE_TAG}
                     """
                 }
             }
@@ -134,7 +133,7 @@ pipeline {
             steps {
                 // Execute Ansible Playbook from the root
                 // We pass dynamic tags so Ansible deploys the version we just built
-                sh "ansible-playbook ansible/deploy.yml --tags '${env.ANSIBLE_TAGS}' -e 'auth_tag=${IMAGE_TAG} inference_tag=${IMAGE_TAG} frontend_tag=${IMAGE_TAG}'"
+                sh "ansible-playbook ansible/deploy.yml --tags '${ansibleTagsString}' -e 'auth_tag=${IMAGE_TAG} inference_tag=${IMAGE_TAG} frontend_tag=${IMAGE_TAG}'"
             }
         }
     }
