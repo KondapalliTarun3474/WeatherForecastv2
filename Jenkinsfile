@@ -1,4 +1,3 @@
-```groovy
 // Define global variables to hold deployment decisions
 // This avoids scoping issues with 'env' variables inside 'when' blocks
 def AUTH_CHANGED = false

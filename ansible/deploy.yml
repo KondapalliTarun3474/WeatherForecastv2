@@ -65,4 +65,4 @@
         definition: "{{ lookup('file', '../k8s/retrainer-deployment.yaml') | from_yaml | combine({'spec':{'template':{'spec':{'containers':[{'name':'retrainer','image':'kondapallitarun3474/weather-retrainer:' + retrainer_tag}]}}}}, recursive=True) }}"
       tags:
         - retrainer
-```
+
