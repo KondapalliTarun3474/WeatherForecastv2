@@ -123,7 +123,7 @@ const Login = () => {
                             }}
                             className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
                         >
-                            {isLogin ? "Don't have an account Ma'am? Sign up" : "Already have an account? Sign in"}
+                            {isLogin ? "Don't have an account Ma'am1? Sign up" : "Already have an account? Sign in"}
                         </button>
                     </div>
                 </form>
