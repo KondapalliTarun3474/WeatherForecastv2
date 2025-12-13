@@ -16,8 +16,8 @@ spec:
       serviceAccountName: retrainer-sa
       containers:
       - name: retrainer
-        image: weather-retrainer:v1 # Local build
-        imagePullPolicy: Never
+        image: kondapallitarun3474/weather-retrainer:v1 # Updated for DockerHub
+        imagePullPolicy: Always
         env:
         - name: ENABLE_RETRAINING
           value: "false"
