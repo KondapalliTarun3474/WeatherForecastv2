@@ -28,6 +28,17 @@ pipeline {
             }
         }
 
+        stage('Test') {
+            steps {
+                echo "Running Unit Tests..."
+                script {
+                    // Test Auth Service (Lightweight)
+                    sh "pip install -r mlops-llm4ts/model-service/auth-service/requirements_auth.txt"
+                    sh "python3 -m unittest mlops-llm4ts/model-service/auth-service/test_auth.py"
+                }
+            }
+        }
+
         stage('Detect Changes') {
             steps {
                 script {
