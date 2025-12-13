@@ -1,0 +1,12 @@
+---
+- name: Update Auth Deployment Image
+  shell: |
+    kubectl set image deployment/auth-deployment auth-service={{ docker_user }}/weather-auth:{{ auth_tag }} -n {{ namespace }}
+
+- name: Restart Auth Deployment
+  shell: |
+    kubectl rollout restart deployment/auth-deployment -n {{ namespace }}
+
+- name: Verify Auth Rollout
+  shell: |
+    kubectl rollout status deployment/auth-deployment -n {{ namespace }}

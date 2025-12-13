@@ -1,0 +1,8 @@
+---
+- name: Update Retrainer Image
+  shell: |
+    kubectl set image deployment/mlops-retrainer retrainer={{ docker_user }}/weather-retrainer:{{ retrainer_tag }} -n {{ namespace }}
+
+- name: Restart Retrainer Deployment
+  shell: |
+    kubectl rollout restart deployment/mlops-retrainer -n {{ namespace }}

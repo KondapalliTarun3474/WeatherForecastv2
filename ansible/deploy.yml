@@ -6,70 +6,14 @@
     # CHANGE THIS to your DockerHub username
     docker_user: "kondapallitarun3474" 
     namespace: "weather-mlops"
-    # Default tags if not provided
+    # Default tags if not provided (overridden by Jenkins)
     auth_tag: "v1"
     inference_tag: "v1"
     frontend_tag: "v1"
+    retrainer_tag: "v1"
 
-  tasks:
-
-    # --- AUTH SERVICE ---
-    - name: Deploy Auth Service
-      tags: auth
-      block:
-        - name: Update Auth Deployment Image
-          shell: |
-            kubectl set image deployment/auth-deployment auth-service={{ docker_user }}/weather-auth:{{ auth_tag }} -n {{ namespace }}
-        
-        - name: Restart Auth Deployment
-          shell: |
-            kubectl rollout restart deployment/auth-deployment -n {{ namespace }}
-        
-        - name: Verify Auth Rollout
-          shell: |
-            kubectl rollout status deployment/auth-deployment -n {{ namespace }}
-
-    # --- INFERENCE SERVICES (All 3) ---
-    - name: Deploy Inference Services
-      tags: inference
-      block:
-        - name: Update T2M Image
-          shell: |
-            kubectl set image deployment/inference-t2m inference-t2m={{ docker_user }}/weather-inference:{{ inference_tag }} -n {{ namespace }}
-        
-        - name: Update RH2M Image
-          shell: |
-            kubectl set image deployment/inference-rh2m inference-rh2m={{ docker_user }}/weather-inference:{{ inference_tag }} -n {{ namespace }}
-        
-        - name: Update WS2M Image
-          shell: |
-            kubectl set image deployment/inference-ws2m inference-ws2m={{ docker_user }}/weather-inference:{{ inference_tag }} -n {{ namespace }}
-
-        - name: Restart Inference Deployments
-          shell: |
-            kubectl rollout restart deployment/inference-t2m -n {{ namespace }}
-            kubectl rollout restart deployment/inference-rh2m -n {{ namespace }}
-            kubectl rollout restart deployment/inference-ws2m -n {{ namespace }}
-
-    # --- FRONTEND SERVICE ---
-    - name: Deploy Frontend Service
-      tags: frontend
-      block:
-        - name: Update Frontend Image
-          shell: |
-            kubectl set image deployment/frontend-deployment frontend={{ docker_user }}/weather-frontend:{{ frontend_tag }} -n {{ namespace }}
-        
-        - name: Restart Frontend Deployment
-          shell: |
-            kubectl rollout restart deployment/frontend-deployment -n {{ namespace }}
-
-    - name: Deploy MLOps Retrainer
-      tags: retrainer
-      block:
-        - name: Update Retrainer Image
-          shell: |
-            kubectl set image deployment/mlops-retrainer retrainer={{ docker_user }}/weather-retrainer:{{ retrainer_tag }} -n {{ namespace }}
-        
-        - name: Restart Retrainer Deployment
-          shell: |
-            kubectl rollout restart deployment/mlops-retrainer -n {{ namespace }}
+  roles:
+    - { role: auth, tags: ['auth'] }
+    - { role: inference, tags: ['inference'] }
+    - { role: frontend, tags: ['frontend'] }
+    - { role: retrainer, tags: ['retrainer'] }

@@ -1,0 +1,8 @@
+---
+- name: Update Frontend Image
+  shell: |
+    kubectl set image deployment/frontend-deployment frontend={{ docker_user }}/weather-frontend:{{ frontend_tag }} -n {{ namespace }}
+
+- name: Restart Frontend Deployment
+  shell: |
+    kubectl rollout restart deployment/frontend-deployment -n {{ namespace }}

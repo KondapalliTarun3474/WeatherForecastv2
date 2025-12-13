@@ -1,0 +1,18 @@
+---
+- name: Update T2M Image
+  shell: |
+    kubectl set image deployment/inference-t2m inference-t2m={{ docker_user }}/weather-inference:{{ inference_tag }} -n {{ namespace }}
+
+- name: Update RH2M Image
+  shell: |
+    kubectl set image deployment/inference-rh2m inference-rh2m={{ docker_user }}/weather-inference:{{ inference_tag }} -n {{ namespace }}
+
+- name: Update WS2M Image
+  shell: |
+    kubectl set image deployment/inference-ws2m inference-ws2m={{ docker_user }}/weather-inference:{{ inference_tag }} -n {{ namespace }}
+
+- name: Restart Inference Deployments
+  shell: |
+    kubectl rollout restart deployment/inference-t2m -n {{ namespace }}
+    kubectl rollout restart deployment/inference-rh2m -n {{ namespace }}
+    kubectl rollout restart deployment/inference-ws2m -n {{ namespace }}
