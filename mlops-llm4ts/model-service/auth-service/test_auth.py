@@ -1,5 +1,11 @@
 import unittest
 import json
+import sys
+import os
+
+# Add current directory to path so imports work
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from auth_service import app
 
 class TestAuthService(unittest.TestCase):
