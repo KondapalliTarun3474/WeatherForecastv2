@@ -20,6 +20,13 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5001
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
         volumeMounts:
         - name: model-storage
           mountPath: /app/models
@@ -49,6 +56,13 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5001
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
         volumeMounts:
         - name: model-storage
           mountPath: /app/models
@@ -78,6 +92,13 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5001
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
         volumeMounts:
         - name: model-storage
           mountPath: /app/models

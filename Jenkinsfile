@@ -11,7 +11,7 @@ pipeline {
 
     environment {
         // Credentials ID as configured in Jenkins
-        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
+        DOCKER_CREDENTIALS_ID = 'docker-credentials'
         DOCKER_USER = 'kondapallitarun3474'
         
         // Dynamic Image Tag
