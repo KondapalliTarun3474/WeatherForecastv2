@@ -28,16 +28,7 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                echo "Running Unit Tests..."
-                script {
-                    // Test Auth Service (Lightweight)
-                    sh "pip install -r mlops-llm4ts/model-service/auth-service/requirements_auth.txt"
-                    sh "python3 -m unittest mlops-llm4ts/model-service/auth-service/test_auth.py"
-                }
-            }
-        }
+
 
         stage('Detect Changes') {
             steps {
@@ -92,6 +83,17 @@ pipeline {
                     
                     echo "Deploy Decisions -> Auth: ${AUTH_CHANGED}, Inference: ${INFERENCE_CHANGED}, Frontend: ${FRONTEND_CHANGED}, MLOps: ${MLOPS_CHANGED}"
                     echo "Ansible Tags: ${ansibleTagsString}"
+                }
+            }
+        }
+
+        stage('Test Auth') {
+            when { expression { return AUTH_CHANGED } }
+            steps {
+                echo "Running Unit Tests for Auth Service..."
+                script {
+                    sh "pip install -r mlops-llm4ts/model-service/auth-service/requirements_auth.txt"
+                    sh "python3 -m unittest mlops-llm4ts/model-service/auth-service/test_auth.py"
                 }
             }
         }
