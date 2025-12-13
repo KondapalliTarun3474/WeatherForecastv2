@@ -10,3 +10,6 @@ frontend-new/node_modules/
 
 # Models
 mlops-llm4ts/model-service/inference-service/models/
+
+# MLOps Service
+MLOps-automation-service/ignore/

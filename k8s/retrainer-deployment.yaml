@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlops-retrainer
+  namespace: weather-mlops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlops-retrainer
+  template:
+    metadata:
+      labels:
+        app: mlops-retrainer
+    spec:
+      serviceAccountName: retrainer-sa
+      containers:
+      - name: retrainer
+        image: weather-retrainer:v1 # Local build
+        imagePullPolicy: Never
+        env:
+        - name: ENABLE_RETRAINING
+          value: "false"
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Starting Retrainer Loop..."
+          while true; do
+            echo "Running Retraining Cycle at $(date)"
+            python retrain.py
+            echo "Cycle finished. Sleeping for 24 hours..."
+            sleep 86400
+          done
+        volumeMounts:
+        - name: model-storage
+          mountPath: /app/models
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: weather-models-pvc

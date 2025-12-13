@@ -1,0 +1,16 @@
+nohup: ignoring input
+2025-12-11 16:13:43,080 - INFO - Starting MLOps Retraining Cycle
+2025-12-11 16:13:43,080 - INFO - Processing parameter: T2M
+2025-12-11 16:17:44,987 - INFO - Starting MLOps Retraining Cycle
+2025-12-11 16:17:44,987 - INFO - Processing parameter: T2M
+2025-12-11 16:18:44,856 - INFO - Starting MLOps Retraining Cycle
+2025-12-11 16:18:44,856 - INFO - Processing parameter: T2M
+2025-12-11 18:12:00,885 - INFO - Starting MLOps Retraining Cycle
+2025-12-11 18:12:00,885 - INFO - Processing parameter: T2M
+2025-12-12 21:19:34,529 - INFO - === DAILY RETRAINING CYCLE STARTED ===
+2025-12-12 21:19:34,543 - WARNING - Retrying (JitteredRetry(total=6, connect=6, read=7, redirect=7, status=7)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7a8ba97d4fa0>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /api/2.0/mlflow/experiments/get-by-name?experiment_name=llm4ts-drift-monitoring
+2025-12-12 21:19:38,548 - WARNING - Retrying (JitteredRetry(total=5, connect=5, read=7, redirect=7, status=7)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7a8ba97d4d30>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /api/2.0/mlflow/experiments/get-by-name?experiment_name=llm4ts-drift-monitoring
+2025-12-12 21:19:46,558 - WARNING - Retrying (JitteredRetry(total=4, connect=4, read=7, redirect=7, status=7)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7a8ba97d4070>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /api/2.0/mlflow/experiments/get-by-name?experiment_name=llm4ts-drift-monitoring
+2025-12-12 21:20:02,560 - WARNING - Retrying (JitteredRetry(total=3, connect=3, read=7, redirect=7, status=7)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7a8ba97d5ae0>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /api/2.0/mlflow/experiments/get-by-name?experiment_name=llm4ts-drift-monitoring
+2025-12-12 21:20:34,564 - WARNING - Retrying (JitteredRetry(total=2, connect=2, read=7, redirect=7, status=7)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7a8ba97d7df0>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /api/2.0/mlflow/experiments/get-by-name?experiment_name=llm4ts-drift-monitoring
+2025-12-12 21:21:38,591 - WARNING - Retrying (JitteredRetry(total=1, connect=1, read=7, redirect=7, status=7)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7a8ba97d7a60>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')': /api/2.0/mlflow/experiments/get-by-name?experiment_name=llm4ts-drift-monitoring

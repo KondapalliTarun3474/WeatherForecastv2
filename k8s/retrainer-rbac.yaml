@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: retrainer-sa
+  namespace: weather-mlops
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: retrainer-role
+  namespace: weather-mlops
+rules:
+  - apiGroups: ["apps", "extensions"]
+    resources: ["deployments"]
+    verbs: ["get", "patch", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: retrainer-binding
+  namespace: weather-mlops
+subjects:
+  - kind: ServiceAccount
+    name: retrainer-sa
+    namespace: weather-mlops
+roleRef:
+  kind: Role
+  name: retrainer-role
+  apiGroup: rbac.authorization.k8s.io

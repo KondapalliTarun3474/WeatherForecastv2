@@ -52,13 +52,17 @@
             kubectl rollout restart deployment/inference-ws2m -n {{ namespace }}
 
     # --- FRONTEND SERVICE ---
-    - name: Deploy Frontend Service
-      tags: frontend
-      block:
-        - name: Update Frontend Image
-          shell: |
-            kubectl set image deployment/frontend-deployment frontend={{ docker_user }}/weather-frontend:{{ frontend_tag }} -n {{ namespace }}
-        
-        - name: Restart Frontend Deployment
-          shell: |
-            kubectl rollout restart deployment/frontend-deployment -n {{ namespace }}
+    - name: Deploy Frontend to Kubernetes
+      k8s:
+        state: present
+        definition: "{{ lookup('file', '../k8s/frontend-deployment.yaml') | from_yaml | combine({'spec':{'template':{'spec':{'containers':[{'name':'frontend','image':'kondapallitarun3474/weather-frontend:' + frontend_tag}]}}}}, recursive=True) }}"
+      tags:
+        - frontend
+
+    - name: Deploy MLOps Retrainer to Kubernetes
+      k8s:
+        state: present
+        definition: "{{ lookup('file', '../k8s/retrainer-deployment.yaml') | from_yaml | combine({'spec':{'template':{'spec':{'containers':[{'name':'retrainer','image':'kondapallitarun3474/weather-retrainer:' + retrainer_tag}]}}}}, recursive=True) }}"
+      tags:
+        - retrainer
+```

@@ -1,9 +1,10 @@
+```groovy
 // Define global variables to hold deployment decisions
 // This avoids scoping issues with 'env' variables inside 'when' blocks
-def deployAuth = false
-def deployInference = false
-def deployFrontend = false
-def hasChanges = false
+def AUTH_CHANGED = false
+def INFERENCE_CHANGED = false
+def FRONTEND_CHANGED = false
+def MLOPS_CHANGED = false
 def ansibleTagsString = ""
 
 pipeline {
@@ -15,7 +16,7 @@ pipeline {
         DOCKER_USER = 'kondapallitarun3474'
         
         // Dynamic Image Tag
-        IMAGE_TAG = "v${env.BUILD_NUMBER}"
+        DOCKER_Tag = "v${env.BUILD_NUMBER}"
 
         // Set Kubeconfig explicitly for kubectl commands
         KUBECONFIG = "/home/tarun-3474/.kube/config"
@@ -32,56 +33,61 @@ pipeline {
             steps {
                 script {
                     def tagsList = []
+                    def gitDiff = ""
 
                     // Print changes for visibility
                     try {
-                        def changesResult = sh(script: 'git diff --name-only HEAD~1 HEAD', returnStdout: true).trim()
-                        echo "Changed files:\n${changesResult}"
+                        gitDiff = sh(script: 'git diff --name-only HEAD~1 HEAD', returnStdout: true).trim()
+                        echo "Changed files:\n${gitDiff}"
                     } catch (Exception e) {
                         echo "Listing changes failed (first run?), proceeding with detection..."
+                        // If git diff fails (e.g. first run), assume all changed
+                        AUTH_CHANGED = true
+                        INFERENCE_CHANGED = true
+                        FRONTEND_CHANGED = true
+                        MLOPS_CHANGED = true
                     }
 
                     // Helper to check changes via shell (robust against string formatting issues)
                     // If git diff fails (e.g. first run), we default to 'true' (deploy match)
                     def checkChange = { pattern ->
-                        try {
-                            // grep returns 0 if found, 1 if not. We use || true to prevent script failure on 1.
-                            // We check if output is non-empty.
-                            def grepResult = sh(script: "git diff --name-only HEAD~1 HEAD | grep '${pattern}' || true", returnStdout: true).trim()
-                            return !grepResult.isEmpty()
-                        } catch (Exception e) {
-                            return true // Assume changed if git fails
-                        }
+                        if (gitDiff.isEmpty()) return true // Assume changed if git diff failed
+                        return gitDiff.contains(pattern)
                     }
 
                     if (checkChange('mlops-llm4ts/model-service/auth-service/')) {
-                        deployAuth = true
+                        AUTH_CHANGED = true
                         if (!tagsList.contains('auth')) tagsList.add('auth')
                     }
                     if (checkChange('mlops-llm4ts/model-service/inference-service/')) {
-                        deployInference = true
+                        INFERENCE_CHANGED = true
                         if (!tagsList.contains('inference')) tagsList.add('inference')
                     }
                     if (checkChange('frontend-new/')) {
-                        deployFrontend = true
+                        FRONTEND_CHANGED = true
                         if (!tagsList.contains('frontend')) tagsList.add('frontend')
+                    }
+                    if (checkChange('MLOps-automation-service/')) {
+                        MLOPS_CHANGED = true
+                        if (!tagsList.contains('retrainer')) tagsList.add('retrainer')
                     }
                     
                     ansibleTagsString = tagsList.join(',')
                     
-                    if (ansibleTagsString != '') {
-                        hasChanges = true
+                    if (AUTH_CHANGED || INFERENCE_CHANGED || FRONTEND_CHANGED || MLOPS_CHANGED) {
+                        // This variable is no longer needed as we use the individual _CHANGED flags
+                        // but keeping it for the ansible stage's 'when' condition for now.
+                        // The ansible stage's 'when' condition should ideally check if ansibleTagsString is not empty.
                     }
                     
-                    echo "Deploy Decisions -> Auth: ${deployAuth}, Inference: ${deployInference}, Frontend: ${deployFrontend}"
+                    echo "Deploy Decisions -> Auth: ${AUTH_CHANGED}, Inference: ${INFERENCE_CHANGED}, Frontend: ${FRONTEND_CHANGED}, MLOps: ${MLOPS_CHANGED}"
                     echo "Ansible Tags: ${ansibleTagsString}"
                 }
             }
         }
-// ... (intermediate build stages remain unchanged logic-wise, but just replacing logic around them implicitly by context)
 
         stage('Build & Push Auth') {
-            when { expression { return deployAuth } }
+            when { expression { return AUTH_CHANGED } }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: DOCKER_CREDENTIALS_ID,
@@ -90,15 +96,15 @@ pipeline {
                 )]) {
                     sh """
                         echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                        docker build -t \${DOCKER_USER}/weather-auth:\${IMAGE_TAG} -f mlops-llm4ts/model-service/auth-service/Dockerfile.auth mlops-llm4ts/model-service/auth-service/
-                        docker push \${DOCKER_USER}/weather-auth:\${IMAGE_TAG}
+                        docker build -t \${DOCKER_USER}/weather-auth:\${DOCKER_Tag} -f mlops-llm4ts/model-service/auth-service/Dockerfile.auth mlops-llm4ts/model-service/auth-service/
+                        docker push \${DOCKER_USER}/weather-auth:\${DOCKER_Tag}
                     """
                 }
             }
         }
 
         stage('Build & Push Inference') {
-            when { expression { return deployInference } }
+            when { expression { return INFERENCE_CHANGED } }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: DOCKER_CREDENTIALS_ID,
@@ -107,15 +113,15 @@ pipeline {
                 )]) {
                     sh """
                         echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                        docker build -t \${DOCKER_USER}/weather-inference:\${IMAGE_TAG} -f mlops-llm4ts/model-service/inference-service/Dockerfile.param mlops-llm4ts/model-service/inference-service/
-                        docker push \${DOCKER_USER}/weather-inference:\${IMAGE_TAG}
+                        docker build -t \${DOCKER_USER}/weather-inference:\${DOCKER_Tag} -f mlops-llm4ts/model-service/inference-service/Dockerfile.param mlops-llm4ts/model-service/inference-service/
+                        docker push \${DOCKER_USER}/weather-inference:\${DOCKER_Tag}
                     """
                 }
             }
         }
 
         stage('Build & Push Frontend') {
-            when { expression { return deployFrontend } }
+            when { expression { return FRONTEND_CHANGED } }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: DOCKER_CREDENTIALS_ID,
@@ -124,19 +130,38 @@ pipeline {
                 )]) {
                     sh """
                         echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
-                        docker build -t \${DOCKER_USER}/weather-frontend:\${IMAGE_TAG} frontend-new/
-                        docker push \${DOCKER_USER}/weather-frontend:\${IMAGE_TAG}
+                        docker build -t \${DOCKER_USER}/weather-frontend:\${DOCKER_Tag} frontend-new/
+                        docker push \${DOCKER_USER}/weather-frontend:\${DOCKER_Tag}
+                    """
+                }
+            }
+        }
+        
+        stage('Build and Push MLOps Retrainer') {
+            when {
+                expression { return MLOPS_CHANGED }
+            }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKER_CREDENTIALS_ID,
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                        docker build -t \${DOCKER_USER}/weather-retrainer:\${DOCKER_Tag} -f MLOps-automation-service/Dockerfile.retrainer MLOps-automation-service/
+                        docker push \${DOCKER_USER}/weather-retrainer:\${DOCKER_Tag}
                     """
                 }
             }
         }
         
         stage('Deploy with Ansible') {
-            when { expression { return hasChanges } }
+            when { expression { return ansibleTagsString != '' } } // Deploy only if there are changes to deploy
             steps {
                 // Execute Ansible Playbook from the root
                 // We pass dynamic tags so Ansible deploys the version we just built
-                sh "ansible-playbook ansible/deploy.yml --tags '${ansibleTagsString}' -e 'auth_tag=${IMAGE_TAG} inference_tag=${IMAGE_TAG} frontend_tag=${IMAGE_TAG}'"
+                sh "ansible-playbook ansible/deploy.yml --tags '${ansibleTagsString}' -e 'auth_tag=${DOCKER_Tag} inference_tag=${DOCKER_Tag} frontend_tag=${DOCKER_Tag} retrainer_tag=${DOCKER_Tag}'"
             }
         }
     }

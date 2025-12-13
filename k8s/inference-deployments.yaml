@@ -16,10 +16,17 @@ spec:
     spec:
       containers:
       - name: inference-t2m
-        image: weather-inference:v1
+        image: kondapallitarun3474/weather-inference:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 5001
+        volumeMounts:
+        - name: model-storage
+          mountPath: /app/models
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: weather-models-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -38,10 +45,17 @@ spec:
     spec:
       containers:
       - name: inference-rh2m
-        image: weather-inference:v1
+        image: kondapallitarun3474/weather-inference:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 5001
+        volumeMounts:
+        - name: model-storage
+          mountPath: /app/models
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: weather-models-pvc
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -60,7 +74,14 @@ spec:
     spec:
       containers:
       - name: inference-ws2m
-        image: weather-inference:v1
+        image: kondapallitarun3474/weather-inference:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 5001
+        volumeMounts:
+        - name: model-storage
+          mountPath: /app/models
+      volumes:
+      - name: model-storage
+        persistentVolumeClaim:
+          claimName: weather-models-pvc
