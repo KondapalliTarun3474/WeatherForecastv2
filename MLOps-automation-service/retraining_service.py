@@ -49,27 +49,9 @@ def attempt_retrain(param="T2M"):
     for attempt in range(1, MAX_RETRIES + 1):
         print(f"\n>>> Retraining Attempt {attempt}/{MAX_RETRIES} for {param} <<<")
         
-        print("Option: Press 's' to Skip real training (use previous weights/mock), or Enter to proceed with Real Retraining.")
-        # print("(Waiting 5s for input... if non-interactive, will proceed with real training)")
-        
-        # In automated MLOps pipeline, we assume non-interactive or default Yes
-        # But keeping structure for logical consistency
-        choice = "" 
-        # try:
-        #     choice = input("Your choice (s/Enter): ").strip().lower()
-        # except EOFError:
-        #     choice = "" 
-            
-        if choice == 's':
-            logging.info(f"[{param}] User selected PREVIOUS WEIGHTS (Mock Retrain).")
-            print(f"[{param}] Mocking retraining... Done.")
-            logging.info(f"[{param}] Retraining skipped by user. Continuing with existing model.")
-            return True 
-            
-        else:
-            logging.info(f"[{param}] Proceeding with REAL retraining...")
-            from train import train_model
-            train_model(param)
+        logging.info(f"[{param}] Proceeding with REAL retraining...")
+        from train import train_model
+        train_model(param)
         
         # Re-evaluate
         from model_evaluator import evaluate_model_health
