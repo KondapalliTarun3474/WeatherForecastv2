@@ -13,6 +13,7 @@ from retraining_service import attempt_retrain
 # =============================================
 #for github
 #for g
+#new test
 
 PROPERTIES = ["T2M", "RH2M", "WS2M"]
 # MAE_THRESHOLD is now handled in model_evaluator
@@ -69,6 +70,9 @@ def run_retraining_cycle():
                 
                 # Check option: ENABLE_RETRAINING
                 import os # Ensure os is imported
+                # Uncomment the following line to force retraining to ON (Simulate Real World)
+                # os.environ["ENABLE_RETRAINING"] = "true" 
+                
                 if os.getenv("ENABLE_RETRAINING", "false").lower() == "true":
                     logging.info(f"[{param}] ENABLE_RETRAINING=true. Starting Automatic Retraining (Heavy Task)...")
                     decision = "RETRAIN_ATTEMPTED"
