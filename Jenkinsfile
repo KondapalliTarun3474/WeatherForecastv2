@@ -205,9 +205,16 @@ pipeline {
         stage('Deploy with Ansible') {
             when { expression { return ansibleTagsString != '' } } // Deploy only if there are changes to deploy
             steps {
-                // Execute Ansible Playbook from the root
-                // We pass dynamic tags so Ansible deploys the version we just built
-                sh "ansible-playbook ansible/deploy.yml --tags '${ansibleTagsString}' -e 'auth_tag=${DOCKER_Tag} inference_tag=${DOCKER_Tag} frontend_tag=${DOCKER_Tag} retrainer_tag=${DOCKER_Tag}'"
+                withCredentials([usernamePassword(
+                    credentialsId: DOCKER_CREDENTIALS_ID,
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    // Execute Ansible Playbook from the root
+                    // We pass dynamic tags so Ansible deploys the version we just built
+                    // We also pass the docker_user from Vault
+                    sh "ansible-playbook ansible/deploy.yml --tags '${ansibleTagsString}' -e 'auth_tag=${DOCKER_Tag} inference_tag=${DOCKER_Tag} frontend_tag=${DOCKER_Tag} retrainer_tag=${DOCKER_Tag} docker_user=${DOCKER_USER}'"
+                }
             }
         }
     }
