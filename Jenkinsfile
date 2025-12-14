@@ -98,6 +98,40 @@ pipeline {
             }
         }
 
+        stage('Test Inference') {
+            when { expression { return INFERENCE_CHANGED } }
+            steps {
+                echo "Running Unit Tests for Inference Service..."
+                script {
+                    // Inference requirements might be needed if they differ
+                    sh "pip install -r mlops-llm4ts/model-service/inference-service/requirements_param.txt"
+                    sh "python3 -m unittest mlops-llm4ts/model-service/inference-service/test_inference.py"
+                }
+            }
+        }
+
+        stage('Test Frontend') {
+            when { expression { return FRONTEND_CHANGED } }
+            steps {
+                echo "Running Smoke Tests for Frontend..."
+                script {
+                    // Simple python validation since node might not be available or slow to install
+                    sh "python3 frontend-new/test_frontend.py"
+                }
+            }
+        }
+
+        stage('Test MLOps') {
+            when { expression { return MLOPS_CHANGED } }
+            steps {
+                echo "Running Component Tests for MLOps..."
+                script {
+                    sh "pip install -r MLOps-automation-service/requirements.txt"
+                    sh "python3 -m unittest MLOps-automation-service/test_mlops.py"
+                }
+            }
+        }
+
         stage('Build & Push Auth') {
             when { expression { return AUTH_CHANGED } }
             steps {
