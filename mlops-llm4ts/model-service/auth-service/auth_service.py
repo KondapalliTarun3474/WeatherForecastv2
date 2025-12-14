@@ -40,7 +40,7 @@ def log_event(username, action, details=None):
     }
     logs.append(entry)
     save_audit(logs)
-#
+#github
 # --- USER PERSISTENCE ---
 def load_users():
     if not os.path.exists(USERS_FILE):
