@@ -12,6 +12,8 @@ from retraining_service import attempt_retrain
 # CONFIGURATION
 # =============================================
 #for github
+#for g
+
 PROPERTIES = ["T2M", "RH2M", "WS2M"]
 # MAE_THRESHOLD is now handled in model_evaluator
 
