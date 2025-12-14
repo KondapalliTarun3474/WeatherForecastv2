@@ -27,10 +27,21 @@ spec:
             cpu: "500m"
             memory: "256Mi"
         volumeMounts:
-        - name: users-config
+        - name: app-data
           mountPath: /app/users.json
           subPath: users.json
+      initContainers:
+      - name: init-users
+        image: busybox
+        command: ["sh", "-c", "cat /config/users.json > /data/users.json"]
+        volumeMounts:
+        - name: users-config
+          mountPath: /config
+        - name: app-data
+          mountPath: /data
       volumes:
       - name: users-config
         configMap:
           name: auth-users-config
+      - name: app-data
+        emptyDir: {}
