@@ -145,7 +145,7 @@ const LLMForecast = () => {
 
                     {/* Chart */}
                     <div className="h-[350px] w-full bg-white/5 rounded-2xl border border-white/10 p-6">
-                        <h3 className="text-lg text-white mb-4">10-Day Forecast (T2M)</h3>
+                        <h3 className="text-lg text-white mb-4">10-Day Forecast ({property})</h3>
                         {result ? (
                             <ResponsiveContainer width="100%" height="80%">
                                 <LineChart data={result}>

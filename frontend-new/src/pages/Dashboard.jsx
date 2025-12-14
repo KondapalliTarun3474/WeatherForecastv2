@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Wind, Thermometer, Sun, Droplets, Eye, Gauge, CloudRain, Map as MapIcon, Calendar
+    Wind, Thermometer, Sun, Droplets, Eye, Gauge, CloudRain, Map as MapIcon, Calendar, LogOut
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { clsx } from 'clsx';
@@ -539,6 +539,17 @@ const Dashboard = () => {
                     color={graphMetric === 't2m' ? '#60a5fa' : '#34d399'}
                 />
             </div>
+            {/* Floating Logout Button */}
+            <button
+                onClick={() => {
+                    localStorage.clear();
+                    navigate('/');
+                }}
+                className="fixed bottom-6 left-6 px-4 py-2 bg-slate-800/80 hover:bg-red-900/50 text-slate-300 hover:text-red-200 border border-slate-700 backdrop-blur-md rounded-lg shadow-2xl z-50 transition-all flex items-center gap-2 group"
+            >
+                <LogOut className="h-4 w-4 group-hover:text-red-400 transition-colors" />
+                <span className="font-medium">Logout</span>
+            </button>
         </div>
     );
 };
