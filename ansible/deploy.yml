@@ -13,8 +13,47 @@
     frontend_tag: "v1"
     retrainer_tag: "v1"
 
-  roles:
-    - { role: auth, tags: ['auth'] }
-    - { role: inference, tags: ['inference'] }
-    - { role: frontend, tags: ['frontend'] }
-    - { role: retrainer, tags: ['retrainer'] }
+  tasks:
+    - name: Deploy Auth Service
+      include_role:
+        name: k8s_deploy
+      vars:
+        deployment_name: "auth-deployment"
+        container_name: "auth-service"
+        image_name: "weather-auth"
+        image_tag: "{{ auth_tag }}"
+      tags: ['auth']
+
+    - name: Deploy Frontend Service
+      include_role:
+        name: k8s_deploy
+      vars:
+        deployment_name: "frontend-deployment"
+        container_name: "frontend"
+        image_name: "weather-frontend"
+        image_tag: "{{ frontend_tag }}"
+      tags: ['frontend']
+
+    - name: Deploy Inference Services
+      include_role:
+        name: k8s_deploy
+      vars:
+        deployment_name: "inference-{{ item }}"
+        container_name: "inference-{{ item }}"
+        image_name: "weather-inference"
+        image_tag: "{{ inference_tag }}"
+      loop:
+        - t2m
+        - rh2m
+        - ws2m
+      tags: ['inference']
+
+    - name: Deploy MLOps Retrainer
+      include_role:
+        name: k8s_deploy
+      vars:
+        deployment_name: "mlops-retrainer"
+        container_name: "retrainer"
+        image_name: "weather-retrainer"
+        image_tag: "{{ retrainer_tag }}"
+      tags: ['retrainer']

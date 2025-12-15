@@ -1,0 +1,12 @@
+---
+- name: Update Deployment Image
+  shell: |
+    kubectl set image deployment/{{ deployment_name }} {{ container_name }}={{ docker_user }}/{{ image_name }}:{{ image_tag }} -n {{ namespace }}
+
+- name: Restart Deployment
+  shell: |
+    kubectl rollout restart deployment/{{ deployment_name }} -n {{ namespace }}
+
+- name: Verify Rollout
+  shell: |
+    kubectl rollout status deployment/{{ deployment_name }} -n {{ namespace }}
