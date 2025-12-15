@@ -3,9 +3,8 @@
   hosts: localhost
   gather_facts: no
   vars:
-    # CHANGE THIS to your DockerHub username
-    # CHANGE THIS to your DockerHub username
-    # docker_user: "kondapallitarun3474" # NOW PROVIDED BY JENKINS (VAULT) 
+    
+    # docker_user: "kondapallitarun3474" #BY JENKINS (VAULT) 
     namespace: "weather-mlops"
     # Default tags if not provided (overridden by Jenkins)
     auth_tag: "v1"
