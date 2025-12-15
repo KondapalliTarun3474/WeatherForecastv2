@@ -10,9 +10,8 @@ pipeline {
     agent any
 
     environment {
-        // Credentials ID as configured in Jenkins
         DOCKER_CREDENTIALS_ID = 'docker-credentials'
-        // DOCKER_USER = 'kondapallitarun3474' // Removed: Provided by Vault Credentials
+        // DOCKER_USER = 'kondapallitarun3474' //by Vault Credentials
         
         // Dynamic Image Tag
         DOCKER_Tag = "v${env.BUILD_NUMBER}"
