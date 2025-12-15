@@ -33,7 +33,8 @@ spec:
       initContainers:
       - name: init-users
         image: busybox
-        command: ["sh", "-c", "cat /config/users.json > /data/users.json"]
+        # Check if users.json exists in PVC. Only copy if MISSING.
+        command: ["sh", "-c", "if [ ! -f /data/users.json ]; then echo 'Initializing users.json from ConfigMap...'; cp /config/users.json /data/users.json; else echo 'users.json already exists in PVC. Skipping init.'; fi"]
         volumeMounts:
         - name: users-config
           mountPath: /config
@@ -44,4 +45,5 @@ spec:
         configMap:
           name: auth-users-config
       - name: app-data
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: auth-data-pvc
