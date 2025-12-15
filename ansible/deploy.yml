@@ -17,6 +17,8 @@
     - name: Deploy Auth Service
       include_role:
         name: k8s_deploy
+        apply:
+          tags: ['auth']
       vars:
         deployment_name: "auth-deployment"
         container_name: "auth-service"
@@ -27,6 +29,8 @@
     - name: Deploy Frontend Service
       include_role:
         name: k8s_deploy
+        apply:
+          tags: ['frontend']
       vars:
         deployment_name: "frontend-deployment"
         container_name: "frontend"
@@ -37,6 +41,8 @@
     - name: Deploy Inference Services
       include_role:
         name: k8s_deploy
+        apply:
+          tags: ['inference']
       vars:
         deployment_name: "inference-{{ item }}"
         container_name: "inference-{{ item }}"
@@ -51,6 +57,8 @@
     - name: Deploy MLOps Retrainer
       include_role:
         name: k8s_deploy
+        apply:
+          tags: ['retrainer']
       vars:
         deployment_name: "mlops-retrainer"
         container_name: "retrainer"
