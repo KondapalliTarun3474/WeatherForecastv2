@@ -11,7 +11,7 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-credentials'
-        // DOCKER_USER = 'kondapallitarun3474' //by Vault Credentials
+         //by Vault Credentials
         
         // Dynamic Image Tag
         DOCKER_Tag = "v${env.BUILD_NUMBER}"
@@ -48,8 +48,8 @@ pipeline {
                         MLOPS_CHANGED = true
                     }
 
-                    // Helper to check changes via shell (robust against string formatting issues)
-                    // If git diff fails (e.g. first run), we default to 'true' (deploy match)
+                    // Helper to check changes via shell
+                    // If git diff fails (e.g. first run), we default to 'true'
                     def checkChange = { pattern ->
                         if (gitDiff.isEmpty()) return true // Assume changed if git diff failed
                         return gitDiff.contains(pattern)
